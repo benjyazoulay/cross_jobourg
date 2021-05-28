@@ -526,6 +526,7 @@ shinyServer(function(input, output,session){
     else if(meteo1$MER[1]>14){meteo1$MER[1]<-9}
     else {meteo1$MER[1]<-NA}
     
+    if(is.na(meteo1$MER[2])){meteo1$MER[2]<-0}
     if(meteo1$MER[2]==0 ){meteo1$MER[2]<-0}
     else if(meteo1$MER[2]>0 & meteo1$MER[2]<=0.1){meteo1$MER[2]<-1}
     else if(meteo1$MER[2]>0.1 & meteo1$MER[2]<=0.5){meteo1$MER[2]<-2}
@@ -630,6 +631,7 @@ shinyServer(function(input, output,session){
     a<-html_text(html_node(page,"div.tide-line:nth-child(1) > div:nth-child(1)"))
     b<-html_text(html_node(page,"div.tide-line:nth-child(3) > div:nth-child(1)"))
     c<-str_c(" · ",a,"/",b," · ")
+    if(str_length(b)>3){c<-str_c(" · ",a," · ")}
     output$coeff<-renderText({c})
     output$temp<-renderText({str_c(meteo1$TEMP[2],"°C · ")})
     
