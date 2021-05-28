@@ -30,6 +30,8 @@ RUN R -e "install.packages(c('shinyWidgets'), repos='https://cloud.r-project.org
 
 RUN R -e "install.packages(c('DT'), repos='https://cloud.r-project.org/')"
 
+RUN R -e "install.packages(c('lubridate'), repos='https://cloud.r-project.org/')"
+
 RUN R -e "install.packages(c('rvest'), repos='https://cloud.r-project.org/')"
 
 # copy the app to the image
