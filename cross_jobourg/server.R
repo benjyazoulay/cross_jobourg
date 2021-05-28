@@ -17,7 +17,7 @@ shinyServer(function(input, output,session){
   
   output$currentTime <- renderText({
     invalidateLater(1000, session)
-    paste(Sys.time()-delta_time)
+    paste(Sys.time())
   })
   
   portification<-function(page){
