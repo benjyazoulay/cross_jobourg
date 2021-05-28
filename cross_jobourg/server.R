@@ -93,7 +93,7 @@ shinyServer(function(input, output,session){
   
   tablification<-function(df){
     heure<-Sys.time()
-    attr(heure, "tzone") <- "UTC"
+    #attr(heure, "tzone") <- "UTC"
     
     df1<-df[df$HEURE<heure,]
     a<-df1[length(df1$DATE),]
@@ -358,7 +358,7 @@ shinyServer(function(input, output,session){
     }
     
     heure<-Sys.time()
-    attr(heure, "tzone") <- "UTC"
+    #attr(heure, "tzone") <- "UTC"
     ###
     gates$DEBUT_1[3]<-NA
     gates$FIN_1[3]<-NA
