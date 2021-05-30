@@ -66,24 +66,41 @@ shinyUI(navbarPage("CROSS Jobourg",
                                                 
                                               )),
                                               column(width = 2,wellPanel(
+                                                fileInput('barfleur_upload','', 
+                                                          accept = c(
+                                                            'text/csv',
+                                                            'text/comma-separated-values',
+                                                            '.csv'
+                                                          ),buttonLabel='Importer', placeholder='Barfleur'),
+                                                div(style = "margin-top: -20px"),
+                                                fileInput('deauville_upload','', 
+                                                          accept = c(
+                                                            'text/csv',
+                                                            'text/comma-separated-values',
+                                                            '.csv'
+                                                          ),buttonLabel='Importer', placeholder='Deauville'),
+                                                div(style = "margin-top: -20px"),
                                                 fileInput('bms_upload','', 
                                                           accept = c(
                                                             'text/csv',
                                                             'text/comma-separated-values',
                                                             '.csv'
                                                           ),buttonLabel='Importer', placeholder='BMS'),
+                                                div(style = "margin-top: -20px"),
                                                 fileInput('meteo_upload','', 
                                                           accept = c(
                                                             'text/csv',
                                                             'text/comma-separated-values',
                                                             '.csv'
                                                           ),buttonLabel='Importer', placeholder='Météo'),
+                                                div(style = "margin-top: -20px"),
                                                 fileInput('col1_upload','', 
                                                           accept = c(
                                                             'text/csv',
                                                             'text/comma-separated-values',
                                                             '.csv'
                                                           ),buttonLabel='Importer', placeholder='Divers'),
+                                                div(style = "margin-top: -20px"),
                                                 fileInput('moyens_upload','', 
                                                           accept = c(
                                                             'text/csv',

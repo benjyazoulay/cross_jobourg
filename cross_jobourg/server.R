@@ -318,10 +318,35 @@ shinyServer(function(input, output,session){
       gates$DEBUT_2[6]<-gates$DEBUT_2[6]-hm("03:00")
       gates$FIN_2[6]<-gates$FIN_2[6]+hm("03:00")
       
+      url="https://marine.meteoconsult.fr/meteo-marine/bulletin-detaille/port-264/previsions-meteo-port-en-bessin-demain"
+      page=read_html(url)
+      a<-html_text(html_node(page,"div.tide-line:nth-child(1)"))
+      a<-str_remove_all(a,"[:space:]")
+      a<-str_extract(a,"Maréehaute.....")
+      a<-str_remove(a,"Maréehaute")
+      a<-str_replace(a,"h",":")
+      date<-Sys.Date()+1
+      date<-date+delta_time
+      date<-str_remove(date," .+")
+      a<-str_c(date," ",a,":00")
+      a<-as.POSIXct(ymd_hms(a,tz="Europe/Paris"))
+      attr(a, "tzone") <- "UTC" 
       
+      if(Sys.time()>gates$FIN_1[6]){
+        gates$DEBUT_1[6]<-gates$DEBUT_2[6]
+        gates$FIN_1[6]<-gates$FIN_2[6]
+        gates$DEBUT_2[6]<-a
+        gates$FIN_2[6]<-a
+        gates$DEBUT_2[6]<-gates$DEBUT_2[6]-hm("03:00")
+        gates$FIN_2[6]<-gates$FIN_2[6]+hm("03:00")
+      }
     }
     
     page<-read.csv("barfleur.csv",encoding = "UTF-8")
+    if (!is.null(input$barfleur_upload)){
+      inFile<-input$barfleur_upload
+      page<- read.csv(inFile$datapath , encoding = "UTF-8")
+    }
     df<-hybride(page)
     gates$DEBUT_1[3]<-df$HEURE[1]
     gates$FIN_1[3]<-df$HEURE[2]
@@ -329,6 +354,10 @@ shinyServer(function(input, output,session){
     gates$FIN_2[3]<-df$HEURE[4]
     
     page<-read.csv("deauville.csv",encoding = "UTF-8")
+    if (!is.null(input$deauville_upload)){
+      inFile<-input$deauville_upload
+      page<- read.csv(inFile$datapath , encoding = "UTF-8")
+    }
     df<-hybride(page)
     gates$DEBUT_1[9]<-df$HEURE[1]
     gates$FIN_1[9]<-df$HEURE[2]
@@ -823,5 +852,15 @@ shinyServer(function(input, output,session){
     return(!is.null(input$moyens_upload))
   })
   outputOptions(output, 'moyens_upload', suspendWhenHidden=FALSE)
+  
+  output$barfleur_upload <- reactive({
+    return(!is.null(input$barfleur_upload))
+  })
+  outputOptions(output, 'barfleur_upload', suspendWhenHidden=FALSE)
+  
+  output$deauville_upload <- reactive({
+    return(!is.null(input$deauville_upload))
+  })
+  outputOptions(output, 'deauville_upload', suspendWhenHidden=FALSE)
   
 })
