@@ -111,6 +111,34 @@ shinyServer(function(input, output,session){
     return(e)
   }
   
+  hybride<-function(df){
+    df<-df[is.na(df$HEURE)==FALSE,]
+    df$HEURE<-str_c(as.character(df$DATE)," ",as.character(df$HEURE))
+    a<-as.POSIXct(ymd_hms(df$HEURE,tz="Europe/Paris"))
+    attr(a, "tzone") <- "UTC" 
+    df$HEURE<-a
+
+    df$DATE<-ymd(str_remove(df$HEURE," .+"))
+    heure<-Sys.time()
+    #attr(heure, "tzone") <- "UTC"
+    
+    df1<-df[df$HEURE<heure,]
+    a<-df1[length(df1$DATE),]
+    df1<-df[df$HEURE>heure,]
+    df1<-df1[is.na(df1$HEURE)==FALSE,]
+    b<-df1[1,]
+    numb_row<-as.integer(rownames(b[1,]))
+    c<-df[numb_row+1,]
+    d<-df[numb_row+2,]
+    e<-bind_rows(a,b,c,d)
+    e<-e[is.na(e$HEURE)==FALSE,]
+    rownames(e)<-NULL
+    if(e$STATUT[1]=="FERMETURE"){
+      e<-e[-1,]
+      e<-bind_rows(e,df[numb_row+3,])
+    }
+    return(e)
+  }
   
   
   observeEvent(input$sexe,{
@@ -136,9 +164,30 @@ shinyServer(function(input, output,session){
   survie1<-read.csv("survie1.csv",encoding = "UTF-8")
   survie_tab<-read.csv("survie.csv",encoding = "UTF-8")
   temp_eau<<-11
+  bms<-read.csv("BMS.csv",encoding = "UTF-8")
+  moyens<-read.csv("moyens.csv",encoding = "UTF-8")
+  
+  
   
   
   observeEvent(input$update,{
+    
+    if (!is.null(input$bms_upload)){
+      inFile<-input$bms_upload
+      bms<- read.csv(inFile$datapath , encoding = "UTF-8")
+    }
+    if (!is.null(input$meteo_upload)){
+      inFile<-input$meteo_upload
+      meteo<- read.csv(inFile$datapath , encoding = "UTF-8")
+    }
+    if (!is.null(input$col1_upload)){
+      inFile<-input$col1_upload
+      col1<- read.csv(inFile$datapath , encoding = "UTF-8")
+    }
+    if (!is.null(input$moyens_upload)){
+      inFile<-input$moyens_upload
+      moyens<- read.csv(inFile$datapath , encoding = "UTF-8")
+    }
     
     gates$DEBUT_1<-as.POSIXct(NA)
     gates$FIN_1<-as.POSIXct(NA)
@@ -172,6 +221,10 @@ shinyServer(function(input, output,session){
     
     page<-read.csv("courseulles.csv",encoding = "UTF-8")
     if(input$SNS_259==1){
+      page<-page[,-6]
+      page<-page[,-6]
+      page<-page[,-6]
+      page<-page[,-6]
       df<-portification(page)
       df<-tablification(df)
       gates$DEBUT_1[7]<-df$HEURE[1]
@@ -232,144 +285,66 @@ shinyServer(function(input, output,session){
     gates$DEBUT_2[6]<-df$HEURE[3]
     gates$FIN_2[6]<-df$HEURE[4]
     
-    gates$DEBUT_1<-as.character(gates$DEBUT_1)
-    gates$FIN_1<-as.character(gates$FIN_1)
-    gates$DEBUT_2<-as.character(gates$DEBUT_2)
-    gates$FIN_2<-as.character(gates$FIN_2)
+    
     ###à revoir
     if(input$SNS_267==2){
       url="https://marine.meteoconsult.fr/meteo-marine/bulletin-detaille/port-264/previsions-meteo-port-en-bessin-aujourdhui"
       page=read_html(url)
-      a<-html_text(html_node(page,"div.tide-line:nth-child(1) > div:nth-child(3) > span:nth-child(3)"))
+      a<-html_text(html_node(page,"div.tide-line:nth-child(1)"))
+      a<-str_remove_all(a,"[:space:]")
+      a<-str_extract(a,"Maréehaute.....")
+      a<-str_remove(a,"Maréehaute")
       a<-str_replace(a,"h",":")
+      date<-Sys.Date()+delta_time
+      date<-str_remove(date," .+")
+      a<-str_c(date," ",a,":00")
+      a<-as.POSIXct(ymd_hms(a,tz="Europe/Paris"))
+      attr(a, "tzone") <- "UTC" 
       gates$DEBUT_1[6]<-a
       gates$FIN_1[6]<-a
+      gates$DEBUT_1[6]<-gates$DEBUT_1[6]-hm("03:00")
+      gates$FIN_1[6]<-gates$FIN_1[6]+hm("03:00")
       
-      a<-html_text(html_node(page,"div.tide-line:nth-child(3) > div:nth-child(3) > span:nth-child(3)"))
+      a<-html_text(html_node(page,"div.tide-line:nth-child(3)"))
+      a<-str_remove_all(a,"[:space:]")
+      a<-str_extract(a,"Maréehaute.....")
+      a<-str_remove(a,"Maréehaute")
       a<-str_replace(a,"h",":")
+      a<-str_c(date," ",a,":00")
+      a<-as.POSIXct(ymd_hms(a,tz="Europe/Paris"))
+      attr(a, "tzone") <- "UTC"
       gates$DEBUT_2[6]<-a
       gates$FIN_2[6]<-a
+      gates$DEBUT_2[6]<-gates$DEBUT_2[6]-hm("03:00")
+      gates$FIN_2[6]<-gates$FIN_2[6]+hm("03:00")
+      
       
     }
     
     page<-read.csv("barfleur.csv",encoding = "UTF-8")
-    page<-page[page$DATE==Sys.Date(),]
-    if(is.na(page$OUVERTURE_1[1])==FALSE){
-      gates$DEBUT_1[3]<-page$OUVERTURE_1[1]
-      gates$DEBUT_2[3]<-page$OUVERTURE_2[1]
-      gates$FIN_1[3]<-page$FERMETURE_1[1]
-      gates$FIN_2[3]<-page$FERMETURE_2[1]
-    }
-    if(is.na(page$OUVERTURE_1[1])==TRUE){
-      gates$DEBUT_1[3]<-page$OUVERTURE_2[1]
-      gates$DEBUT_2[3]<-page$OUVERTURE_3[1]
-      gates$FIN_1[3]<-page$FERMETURE_2[1]
-      page<-read.csv("barfleur.csv",encoding = "UTF-8")
-      page<-page[page$DATE==Sys.Date()+1,]
-      gates$FIN_2[3]<-page$FERMETURE_1[1]
-    }
+    df<-hybride(page)
+    gates$DEBUT_1[3]<-df$HEURE[1]
+    gates$FIN_1[3]<-df$HEURE[2]
+    gates$DEBUT_2[3]<-df$HEURE[3]
+    gates$FIN_2[3]<-df$HEURE[4]
     
     page<-read.csv("deauville.csv",encoding = "UTF-8")
-    page<-page[page$DATE==Sys.Date(),]
-    if(is.na(page$OUVERTURE_1[1])==FALSE){
-      gates$DEBUT_1[9]<-page$OUVERTURE_1[1]
-      gates$DEBUT_2[9]<-page$OUVERTURE_2[1]
-      gates$FIN_1[9]<-page$FERMETURE_1[1]
-      gates$FIN_2[9]<-page$FERMETURE_2[1]
-    }
-    if(is.na(page$OUVERTURE_1[1])==TRUE){
-      gates$DEBUT_1[9]<-page$OUVERTURE_2[1]
-      gates$DEBUT_2[9]<-page$OUVERTURE_3[1]
-      gates$FIN_1[9]<-page$FERMETURE_2[1]
-      page<-read.csv("deauville.csv",encoding = "UTF-8")
-      page<-page[page$DATE==Sys.Date()+1,]
-      gates$FIN_2[9]<-page$FERMETURE_1[1]
-    }
+    df<-hybride(page)
+    gates$DEBUT_1[9]<-df$HEURE[1]
+    gates$FIN_1[9]<-df$HEURE[2]
+    gates$DEBUT_2[9]<-df$HEURE[3]
+    gates$FIN_2[9]<-df$HEURE[4]
+    
+    gates$DEBUT_1<-as.character(gates$DEBUT_1)
+    gates$FIN_1<-as.character(gates$FIN_1)
+    gates$DEBUT_2<-as.character(gates$DEBUT_2)
+    gates$FIN_2<-as.character(gates$FIN_2)
 
-    for (i in 1:length(gates$DEBUT_1)) {
-      if(i==3 | i==9 | (i==6 & input$SNS_267==2)){
-      if(str_length(gates$DEBUT_1[i])==5){
-        gates$DEBUT_1[i]<-str_c(gates$DEBUT_1[i],":00")}
-      if(str_length(gates$DEBUT_1[i])<5 & str_length(gates$DEBUT_1[i])>0){
-        gates$DEBUT_1[i]<-str_c("0",gates$DEBUT_1[i],":00")}
-      if(gates$DEBUT_1[i]==""){gates$DEBUT_1[i]<-NA}
-      }
-      }
-    for (i in 1:length(gates$DEBUT_2)) {
-      if(i==3 | i==9 | (i==6 & input$SNS_267==2)){
-      if(str_length(gates$DEBUT_2[i])==5){
-        gates$DEBUT_2[i]<-str_c(gates$DEBUT_2[i],":00")}
-      if(str_length(gates$DEBUT_2[i])<5 & str_length(gates$DEBUT_2[i])>0){
-        gates$DEBUT_2[i]<-str_c("0",gates$DEBUT_2[i],":00")}
-      if(gates$DEBUT_2[i]==""){gates$DEBUT_2[i]<-NA}
-      }
-      }
-    for (i in 1:length(gates$FIN_1)) {
-      if(i==3 | i==9 | (i==6 & input$SNS_267==2)){
-      if(str_length(gates$FIN_1[i])==5){
-        gates$FIN_1[i]<-str_c(gates$FIN_1[i],":00")}
-      if(str_length(gates$FIN_1[i])<5 & str_length(gates$FIN_1[i])>0){
-        gates$FIN_1[i]<-str_c("0",gates$FIN_1[i],":00")}
-      if(gates$FIN_1[i]==""){gates$FIN_1[i]<-NA}
-      }
-      }
-    for (i in 1:length(gates$FIN_2)) {
-      if(i==3 | i==9 | (i==6 & input$SNS_267==2)){
-      if(str_length(gates$FIN_2[i])==5){
-        gates$FIN_2[i]<-str_c(gates$FIN_2[i],":00")}
-      if(str_length(gates$FIN_2[i])<5 & str_length(gates$FIN_2[i])>0){
-        gates$FIN_2[i]<-str_c("0",gates$FIN_2[i],":00")}
-      if(gates$FIN_2[i]==""){gates$FIN_2[i]<-NA}
-      }
-      }
-    for (i in length(gates$FIN_2)) {
-      if(i==3 | i==9 | (i==6 & input$SNS_267==2)){
-        gates$DEBUT_1[i]<-as.POSIXct(gates$DEBUT_1[i],tryFormats="%H:%M:%S")
-        gates$DEBUT_1[i]<-ymd_hms(gates$DEBUT_1[i])-delta_time
-        
-        gates$DEBUT_2[i]<-as.POSIXct(gates$DEBUT_2[i],tryFormats="%H:%M:%S")
-        gates$DEBUT_2[i]<-ymd_hms(gates$DEBUT_2[i])-delta_time
-        
-        gates$FIN_1[i]<-as.POSIXct(gates$FIN_1[i],tryFormats="%H:%M:%S")
-        gates$FIN_1[i]<-ymd_hms(gates$FIN_1[i])-delta_time
-        
-        gates$FIN_2[i]<-as.POSIXct(gates$FIN_2[i],tryFormats="%H:%M:%S")
-        gates$FIN_2[i]<-ymd_hms(gates$FIN_2[i])-delta_time
-      }
-    }
     
-    
-    for (i in 1:length(gates$FIN_2)) {
-      if(i==3 | i==9 | (i==6 & input$SNS_267==2)){
-      if(is.na(gates$DEBUT_2[i])){next}
-      if(is.na(gates$FIN_2[i])){next}
-      if(gates$FIN_2[i]<gates$DEBUT_2[i]){
-        gates$FIN_2[i]<-ymd_hms(gates$FIN_2[i])+hm("24:00")
-      }
-      }
-    }
-    
-    
-    if(input$SNS_267==2){
-      gates$DEBUT_1[6]<-ymd_hms(gates$DEBUT_1[6])-hm("03:00")
-      gates$FIN_1[6]<-ymd_hms(gates$FIN_1[6])+hm("03:00")
-      gates$DEBUT_2[6]<-ymd_hms(gates$DEBUT_2[6])-hm("03:00")
-      gates$FIN_2[6]<-ymd_hms(gates$FIN_2[6])+hm("03:00")
-    }
     
     heure<-Sys.time()
     #attr(heure, "tzone") <- "UTC"
-    ###
-    gates$DEBUT_1[3]<-NA
-    gates$FIN_1[3]<-NA
-    gates$DEBUT_2[3]<-NA
-    gates$FIN_2[3]<-NA
-    gates$DEBUT_1[9]<-NA
-    gates$FIN_1[9]<-NA
-    gates$DEBUT_2[9]<-NA
-    gates$FIN_2[9]<-NA
-    ###
-    
+
     for (i in 1:length(gates$PORT)) {
       if(is.na(gates$DEBUT_1[i])){}
       else if (heure<=ymd_hms(gates$FIN_1[i]) & heure>=ymd_hms(gates$DEBUT_1[i])){gates$STATUT[i]<-"OUVERT"}
@@ -383,23 +358,24 @@ shinyServer(function(input, output,session){
     
     gates$DEBUT_1<-as.character(gates$DEBUT_1)
     gates$DEBUT_1<-str_remove(gates$DEBUT_1,as.character(Sys.Date()))
-    #gates$DEBUT_1<-str_split(gates$DEBUT_1," ")[[1]][2]
-    # 
+    gates$DEBUT_1<-str_remove(gates$DEBUT_1,"(:00)$")
+
     
     gates$DEBUT_2<-as.character(gates$DEBUT_2)
     gates$DEBUT_2<-str_remove(gates$DEBUT_2,as.character(Sys.Date()))
-    # gates$DEBUT_2[i]<-str_split(gates$DEBUT_2[i]," ")[[1]][2]
-    # 
+    gates$DEBUT_2<-str_remove(gates$DEBUT_2,"(:00)$")
     
+
     gates$FIN_1<-as.character(gates$FIN_1)
     gates$FIN_1<-str_remove(gates$FIN_1,as.character(Sys.Date()))
-    # gates$FIN_1[i]<-str_split(gates$FIN_1[i]," ")[[1]][2]
-    # 
+    gates$FIN_1<-str_remove(gates$FIN_1,"(:00)$")
+
 
     gates$FIN_2<-as.character(gates$FIN_2)
     gates$FIN_2<-str_remove(gates$FIN_2,as.character(Sys.Date()))
-    # gates$FIN_2[i]<-str_split(gates$FIN_2[i]," ")[[1]][2]
+    gates$FIN_2<-str_remove(gates$FIN_2,"(:00)$")
     
+
 
     
     gates<-datatable(gates, selection = 'none', editable = T, options = list(dom = 't'), rownames= FALSE) %>% formatStyle(
@@ -418,6 +394,7 @@ shinyServer(function(input, output,session){
     a<-ymd_hms(a)-delta_time
     a<-as.character(a)
     a<-str_split(a," ")[[1]][2]
+    a<-str_remove(a,"(:00)$")
     col1[1,2]<-a
     
     b<-html_text(html_node(page,".sun > div:nth-child(5) > span:nth-child(2)"))
@@ -426,6 +403,7 @@ shinyServer(function(input, output,session){
     b<-ymd_hms(b)-delta_time
     b<-as.character(b)
     b<-str_split(b," ")[[1]][2]
+    b<-str_remove(b,"(:00)$")
     col1[2,2]<-b
     
     colnames(col1)<-c("  "," ")
@@ -433,7 +411,7 @@ shinyServer(function(input, output,session){
     
     output$col1<-renderDT(col1, selection = 'none', server = F, editable = T, extensions = 'Buttons',
                           options = list(dom = 'Bfrtip',
-                                         buttons = c('csv'),
+                                         buttons = list(list(extend = 'csv', filename= 'col1')),
                                          paging = F,
                                          searching = F, info = FALSE), rownames= FALSE)
     
@@ -549,25 +527,23 @@ shinyServer(function(input, output,session){
                            editable = T,
                            extensions = 'Buttons',
                            options = list(dom = 'Bfrtip',
-                                          buttons = c('csv'),
+                                          buttons = list(list(extend = 'csv', filename= 'meteo')),
                                           paging = F,
                                           searching = F, info = FALSE
                                           ),
                            rownames= FALSE)
     
-    bms<-read.csv("BMS.csv",encoding = "UTF-8")
     output$bms<-renderDT(bms, 
                            selection = 'none',
                            server = F, 
                            editable = T,
                            extensions = 'Buttons',
                            options = list(dom = 'Bfrtip',
-                                          buttons = c('csv'),
+                                          buttons = list(list(extend = 'csv', filename= 'BMS')),
                                           paging = F,
                                           searching = F, info = FALSE
                            ),
                            rownames= FALSE)
-    moyens<-read.csv("moyens.csv",encoding = "UTF-8")
     colnames(moyens)<-c("  "," ")
     output$moyens<-renderDT(moyens, 
                          selection = 'none',
@@ -575,7 +551,7 @@ shinyServer(function(input, output,session){
                          editable = T,
                          extensions = 'Buttons',
                          options = list(dom = 'Bfrtip',
-                                        buttons = c('csv'),
+                                        buttons = list(list(extend = 'csv', filename= 'moyens')),
                                         paging = F,
                                         searching = F, info = FALSE
                          ),
@@ -584,48 +560,64 @@ shinyServer(function(input, output,session){
     marees<-read.csv("marees.csv",encoding = "UTF-8")
     url="https://marine.meteoconsult.fr/meteo-marine/bulletin-detaille/port-247/previsions-meteo-saint-malo-aujourdhui"
     page=read_html(url)
-    a<-html_text(html_node(page,"div.tide-line:nth-child(1) > div:nth-child(3) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(1)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréehaute.....")
+    a<-str_remove(a,"Maréehaute")
     marees$SAINT_MALO[1]<-a
-    a<-html_text(html_node(page,"div.tide-line:nth-child(1) > div:nth-child(2) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(1)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréebasse.....")
+    a<-str_remove(a,"Maréebasse")
     marees$SAINT_MALO[2]<-a
-    a<-html_text(html_node(page,"div.tide-line:nth-child(3) > div:nth-child(3) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(3)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréehaute.....")
+    a<-str_remove(a,"Maréehaute")
     marees$SAINT_MALO[3]<-a
-    a<-html_text(html_node(page,"div.tide-line:nth-child(3) > div:nth-child(2) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(3)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréebasse.....")
+    a<-str_remove(a,"Maréebasse")
     marees$SAINT_MALO[4]<-a
-    if(is.na(marees$SAINT_MALO[3])){
-      a<-html_text(html_node(page,"div.high-tide:nth-child(1) > span:nth-child(3)"))
-      marees$SAINT_MALO[3]<-a
-    }
-    if(is.na(marees$SAINT_MALO[4])){
-      a<-html_text(html_node(page,"div.low-tide:nth-child(1) > span:nth-child(3)"))
-      marees$SAINT_MALO[4]<-a
-    }
+    
     url="https://marine.meteoconsult.fr/meteo-marine/bulletin-detaille/port-247/previsions-meteo-saint-malo-demain"
     page=read_html(url)
-    a<-html_text(html_node(page,"div.tide-line:nth-child(1) > div:nth-child(3) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(1)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréehaute.....")
+    a<-str_remove(a,"Maréehaute")
     marees$SAINT_MALO[5]<-a
     
     url="https://marine.meteoconsult.fr/meteo-marine/bulletin-detaille/port-258/previsions-meteo-cherbourg-aujourdhui"
     page=read_html(url)
-    a<-html_text(html_node(page,"div.tide-line:nth-child(1) > div:nth-child(3) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(1)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréehaute.....")
+    a<-str_remove(a,"Maréehaute")
     marees$CHERBOURG[1]<-a
-    a<-html_text(html_node(page,"div.tide-line:nth-child(1) > div:nth-child(2) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(1)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréebasse.....")
+    a<-str_remove(a,"Maréebasse")
     marees$CHERBOURG[2]<-a
-    a<-html_text(html_node(page,"div.tide-line:nth-child(3) > div:nth-child(3) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(3)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréehaute.....")
+    a<-str_remove(a,"Maréehaute")
     marees$CHERBOURG[3]<-a
-    a<-html_text(html_node(page,"div.tide-line:nth-child(3) > div:nth-child(2) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(3)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréebasse.....")
+    a<-str_remove(a,"Maréebasse")
     marees$CHERBOURG[4]<-a
-    if(is.na(marees$CHERBOURG[3])){
-      a<-html_text(html_node(page,"div.high-tide:nth-child(1) > span:nth-child(3)"))
-      marees$CHERBOURG[3]<-a
-    }
-    if(is.na(marees$CHERBOURG[4])){
-      a<-html_text(html_node(page,"div.low-tide:nth-child(1) > span:nth-child(3)"))
-      marees$CHERBOURG[4]<-a
-    }
+    
     url="https://marine.meteoconsult.fr/meteo-marine/bulletin-detaille/port-258/previsions-meteo-cherbourg-demain"
     page=read_html(url)
-    a<-html_text(html_node(page,"div.tide-line:nth-child(1) > div:nth-child(3) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(1)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréehaute.....")
+    a<-str_remove(a,"Maréehaute")
     marees$CHERBOURG[5]<-a
     
     a<-html_text(html_node(page,"div.tide-line:nth-child(1) > div:nth-child(1)"))
@@ -637,25 +629,34 @@ shinyServer(function(input, output,session){
     
     url="https://marine.meteoconsult.fr/meteo-marine/bulletin-detaille/port-275/previsions-meteo-le-havre-aujourdhui"
     page=read_html(url)
-    a<-html_text(html_node(page,"div.tide-line:nth-child(1) > div:nth-child(3) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(1)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréehaute.....")
+    a<-str_remove(a,"Maréehaute")
     marees$LE_HAVRE[1]<-a
-    a<-html_text(html_node(page,"div.tide-line:nth-child(1) > div:nth-child(2) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(1)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréebasse.....")
+    a<-str_remove(a,"Maréebasse")
     marees$LE_HAVRE[2]<-a
-    a<-html_text(html_node(page,"div.tide-line:nth-child(3) > div:nth-child(3) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(3)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréehaute.....")
+    a<-str_remove(a,"Maréehaute")
     marees$LE_HAVRE[3]<-a
-    a<-html_text(html_node(page,"div.tide-line:nth-child(3) > div:nth-child(2) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(3)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréebasse.....")
+    a<-str_remove(a,"Maréebasse")
     marees$LE_HAVRE[4]<-a
-    if(is.na(marees$LE_HAVRE[3])){
-      a<-html_text(html_node(page,"div.high-tide:nth-child(1) > span:nth-child(3)"))
-      marees$LE_HAVRE[3]<-a
-    }
-    if(is.na(marees$LE_HAVRE[4])){
-      a<-html_text(html_node(page,"div.low-tide:nth-child(1) > span:nth-child(3)"))
-      marees$LE_HAVRE[4]<-a
-    }
+    
+    
     url="https://marine.meteoconsult.fr/meteo-marine/bulletin-detaille/port-275/previsions-meteo-le-havre-demain"
     page=read_html(url)
-    a<-html_text(html_node(page,"div.tide-line:nth-child(1) > div:nth-child(3) > span:nth-child(3)"))
+    a<-html_text(html_node(page,"div.tide-line:nth-child(1)"))
+    a<-str_remove_all(a,"[:space:]")
+    a<-str_extract(a,"Maréehaute.....")
+    a<-str_remove(a,"Maréehaute")
     marees$LE_HAVRE[5]<-a
     
     for (i in 1:length(marees$SAINT_MALO)) {
@@ -730,6 +731,10 @@ shinyServer(function(input, output,session){
     marees$LE_HAVRE<-as.character(marees$LE_HAVRE)
     marees$LE_HAVRE<-str_remove(marees$LE_HAVRE,as.character(Sys.Date()))
     
+    marees$LE_HAVRE<-str_remove(marees$LE_HAVRE,"(:00)$")
+    marees$CHERBOURG<-str_remove(marees$CHERBOURG,"(:00)$")
+    marees$SAINT_MALO<-str_remove(marees$SAINT_MALO,"(:00)$")
+    
     output$marees<-renderDT(marees, 
                          selection = 'none',
                          server = F, 
@@ -751,6 +756,9 @@ shinyServer(function(input, output,session){
       survie1$FONCTIONNEL<-survie_tab$FONCTIONNEL_F[1]
       survie1$SURVIE<-survie_tab$SURVIE_F[1]
     }
+    
+    survie1$SURVIE<-str_remove(survie1$SURVIE,"(:00)$")
+    survie1$FONCTIONNEL<-str_remove(survie1$FONCTIONNEL,"(:00)$")
     
     output$survie1<-renderDT(survie1, 
                              selection = 'none',
@@ -781,6 +789,9 @@ shinyServer(function(input, output,session){
       survie1$SURVIE<-survie_tab$SURVIE_F[1]
     }
     
+    survie1$SURVIE<-str_remove(survie1$SURVIE,"(:00)$")
+    survie1$FONCTIONNEL<-str_remove(survie1$FONCTIONNEL,"(:00)$")
+    
     output$survie1<-renderDT(survie1, 
                              selection = 'none',
                              server = F, 
@@ -793,6 +804,24 @@ shinyServer(function(input, output,session){
                              rownames= FALSE)
   })
   
+  output$bms_upload <- reactive({
+    return(!is.null(input$bms_upload))
+  })
+  outputOptions(output, 'bms_upload', suspendWhenHidden=FALSE)
   
+  output$meteo_upload <- reactive({
+    return(!is.null(input$meteo_upload))
+  })
+  outputOptions(output, 'meteo_upload', suspendWhenHidden=FALSE)
+  
+  output$col1_upload <- reactive({
+    return(!is.null(input$col1_upload))
+  })
+  outputOptions(output, 'col1_upload', suspendWhenHidden=FALSE)
+  
+  output$moyens_upload <- reactive({
+    return(!is.null(input$moyens_upload))
+  })
+  outputOptions(output, 'moyens_upload', suspendWhenHidden=FALSE)
   
 })

@@ -7,9 +7,16 @@ library(DT)
 
 shinyUI(navbarPage("CROSS Jobourg",
                    tabPanel("",fluidPage(
+                     tags$style("
+              body {
+    -moz-transform: scale(0.55, 0.55); /* Moz-browsers */
+    zoom: 0.55; /* Other non-webkit browsers */
+    zoom: 55%; /* Webkit browsers */
+}
+              "),
                             
                                             fluidRow(
-                                              column(width = 3,wellPanel(
+                                              column(width = 2,wellPanel(
                                                 actionButton("update","Actualiser"),
                                                 p(""),
                                                 radioButtons("SNS_259","SNS 259",choices = list("Au bassin"=1, "Dans l'avant-port"=2),inline = T),
@@ -23,42 +30,70 @@ shinyUI(navbarPage("CROSS Jobourg",
                                                 p("M. GIRARD : 06 16 45 22 44")
                                                 )),
                                               
-                                              column(width = 9,wellPanel(
+                                              column(width = 10,wellPanel(
                                                 div(style="display: inline-block;vertical-align:top",h2(textOutput("currentTime"), style="color:red")),
                                                 div(style="display: inline-block;vertical-align:top",h2(textOutput("coeff"))),
                                                 div(style="display: inline-block;vertical-align:top",h2(textOutput("temp"))),
                                                 div(style="display: inline-block;vertical-align:top;width: 20%;",selectizeInput("vigipirate","Niveau Vigipirate",choices = list("-","Vigilance","Sécurité renforcée - Risque attentat","Urgence attentat"),selected = "Urgence attentat")),
                                                 div(style="display: inline-block;vertical-align:top;width: 15%;",numericInput("isps","Niveau sûreté ISPS",value=1)),
-                                                div(style="display: inline-block;vertical-align:top",DTOutput("portes"))
+                                                div(style="display: inline-block;vertical-align:top",DTOutput("portes")),
+                                                div(style="display: inline-block;vertical-align:top",DTOutput("marees")),
+                                                div(style="display: inline-block;vertical-align:top",DTOutput("bms"))
                                                 ))),
                                               
                                             fluidRow(
-                                              column(width = 4,wellPanel(
+                                              column(width = 3,wellPanel(
                                                 h4(p("Données physiologiques")),
                                                 radioButtons("sexe","Sexe",choices=list("M"=1,"F"=2),inline = T,selected = 1),
                                                 div(style="display: inline-block;vertical-align:bottom;width: 45%;",numericInput("age","Age",30)),
                                                 div(style="display: inline-block;vertical-align:bottom;width: 45%;",numericInput("taille","Taille cm",175)),
                                                 div(style="display: inline-block;vertical-align:bottom;width: 45%;",numericInput("poids","Poids kg",77)),
                                                 div(style="display: inline-block;vertical-align:bottom;width: 45%;",numericInput("graisse","Masse adipeuse %",25)),
-                                                div(style="display: inline-block;vertical-align:top;font-size:80%",DTOutput("survie1")),
-                                                p(""),
-                                                div(style="display: inline-block;vertical-align:top",DTOutput("moyens"))
+                                                div(style="display: inline-block;vertical-align:top",DTOutput("survie1"))
+                                                
                                                 )),
                                               
-                                              column(width = 8,wellPanel(
+                                              column(width = 3,wellPanel(
                                                 div(style="display: inline-block;vertical-align:top",DTOutput("meteo")),
-                                                div(style="display: inline-block;vertical-align:top;font-size:80%",DTOutput("col1")),
                                                 div(style="display: inline-block;vertical-align:top",DTOutput("meteo1"))
                                                 
                                                 
+                                              )),
+                                              column(width = 4,wellPanel(
+                                                div(style="display: inline-block;vertical-align:top",DTOutput("col1")),
+                                                div(style="display: inline-block;vertical-align:top",DTOutput("moyens"))
+                                                
+                                                
+                                              )),
+                                              column(width = 2,wellPanel(
+                                                fileInput('bms_upload','', 
+                                                          accept = c(
+                                                            'text/csv',
+                                                            'text/comma-separated-values',
+                                                            '.csv'
+                                                          ),buttonLabel='Importer', placeholder='BMS'),
+                                                fileInput('meteo_upload','', 
+                                                          accept = c(
+                                                            'text/csv',
+                                                            'text/comma-separated-values',
+                                                            '.csv'
+                                                          ),buttonLabel='Importer', placeholder='Météo'),
+                                                fileInput('col1_upload','', 
+                                                          accept = c(
+                                                            'text/csv',
+                                                            'text/comma-separated-values',
+                                                            '.csv'
+                                                          ),buttonLabel='Importer', placeholder='Divers'),
+                                                fileInput('moyens_upload','', 
+                                                          accept = c(
+                                                            'text/csv',
+                                                            'text/comma-separated-values',
+                                                            '.csv'
+                                                          ),buttonLabel='Importer', placeholder='Moyens')
+                                                
+                                                
                                               ))
-                                            ),
-                                            fluidRow(
-                                              column(width = 12,wellPanel(
-                                                div(style="display: inline-block;vertical-align:top",DTOutput("bms")),
-                                                div(style="display: inline-block;vertical-align:top",DTOutput("marees"))
-                                              ))
-                                              )
+                                            )
                                         )
                             )
                    )
