@@ -61,7 +61,7 @@ shinyServer(function(input, output,session){
       if(str_length(df$HEURE[i])==4){df$HEURE[i]<-str_c("0",df$HEURE[i])}
     }
     
-    a<-as.Date.character("2021-01-01")
+    a<-as.Date.character(page$DATE[1])
     df$DATE[1]<-as.character(a)
     for (i in 2:length(df$HEURE)) {
       if(df$HEURE[i-1]>df$HEURE[i]){
