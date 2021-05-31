@@ -712,10 +712,15 @@ shinyServer(function(input, output,session){
       marees$SAINT_MALO[1]<-NA
       if(is.na(marees$SAINT_MALO[5])){marees$SAINT_MALO[5]<-a}
     }
-    
+    for (i in 1:length(marees$SAINT_MALO)) {
+      if(is.na(marees$SAINT_MALO[i])){marees$SM[i]<-1}
+      else if(heure>marees$SAINT_MALO[i]){marees$SM[i]<-1}
+      else{marees$SM[i]<-0}
+    }
     marees$SAINT_MALO<-as.character(marees$SAINT_MALO)
     marees$SAINT_MALO<-str_remove(marees$SAINT_MALO,as.character(Sys.Date()))
     marees$SAINT_MALO<-str_remove(marees$SAINT_MALO,as.character(Sys.Date()+1))
+    marees$SAINT_MALO<-str_replace(marees$SAINT_MALO,as.character(Sys.Date()-1),"(J-1) ")
     
     for (i in 1:length(marees$CHERBOURG)) {
       if(is.na(marees$CHERBOURG[i])){next}
@@ -738,9 +743,15 @@ shinyServer(function(input, output,session){
       if(is.na(marees$CHERBOURG[5])){marees$CHERBOURG[5]<-a}
     }
     
+    for (i in 1:length(marees$CHERBOURG)) {
+      if(is.na(marees$CHERBOURG[i])){marees$CH[i]<-1}
+      else if(heure>marees$CHERBOURG[i]){marees$CH[i]<-1}
+      else{marees$CH[i]<-0}
+    }
     marees$CHERBOURG<-as.character(marees$CHERBOURG)
     marees$CHERBOURG<-str_remove(marees$CHERBOURG,as.character(Sys.Date()))
     marees$CHERBOURG<-str_remove(marees$CHERBOURG,as.character(Sys.Date()+1))
+    marees$CHERBOURG<-str_replace(marees$CHERBOURG,as.character(Sys.Date()-1),"(J-1) ")
     
     for (i in 1:length(marees$LE_HAVRE)) {
       if(is.na(marees$LE_HAVRE[i])){next}
@@ -763,23 +774,43 @@ shinyServer(function(input, output,session){
       if(is.na(marees$LE_HAVRE[5])){marees$LE_HAVRE[5]<-a}
     }
     
+    for (i in 1:length(marees$LE_HAVRE)) {
+      if(is.na(marees$LE_HAVRE[i])){marees$LH[i]<-1}
+      else if(heure>marees$LE_HAVRE[i]){marees$LH[i]<-1}
+      else{marees$LH[i]<-0}
+    }
     marees$LE_HAVRE<-as.character(marees$LE_HAVRE)
     marees$LE_HAVRE<-str_remove(marees$LE_HAVRE,as.character(Sys.Date()))
     marees$LE_HAVRE<-str_remove(marees$LE_HAVRE,as.character(Sys.Date()+1))
+    marees$LE_HAVRE<-str_replace(marees$LE_HAVRE,as.character(Sys.Date()-1),"(J-1) ")
     
     marees$LE_HAVRE<-str_remove(marees$LE_HAVRE,"(:00)$")
     marees$CHERBOURG<-str_remove(marees$CHERBOURG,"(:00)$")
     marees$SAINT_MALO<-str_remove(marees$SAINT_MALO,"(:00)$")
     
-    output$marees<-renderDT(marees, 
-                         selection = 'none',
-                         server = F, 
-                         editable = T,
-                         options = list(dom = 'dt',
-                                        paging = F,
-                                        searching = F, info = FALSE
-                         ),
-                         rownames= FALSE)
+    marees<-DT::datatable(marees, 
+                          selection = 'none', 
+                          options = list(dom = 'dt',
+                                                 paging = F,
+                                                 searching = F, info = FALSE,
+      columnDefs = list(list(targets = c(4,5,6), visible = FALSE))
+    ),rownames= FALSE) 
+    
+    marees<-marees %>% formatStyle(
+      'SAINT_MALO', 'SM',
+      backgroundColor = styleEqual(c(0, 1), c('', 'yellow'))
+    )
+    
+    marees<-marees %>% formatStyle(
+      'CHERBOURG', 'CH',
+      backgroundColor = styleEqual(c(0, 1), c('', 'yellow'))
+    )
+    marees<-marees %>% formatStyle(
+      'LE_HAVRE', 'LH',
+      backgroundColor = styleEqual(c(0, 1), c('', 'yellow'))
+    )
+    
+    output$marees<-renderDT(marees,server = F)
     
     survie1$TEMP_EAU[1]<-as.numeric(meteo1$TEMP[1])
     if(input$sexe==1){
