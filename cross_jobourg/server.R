@@ -387,21 +387,25 @@ shinyServer(function(input, output,session){
     
     gates$DEBUT_1<-as.character(gates$DEBUT_1)
     gates$DEBUT_1<-str_remove(gates$DEBUT_1,as.character(Sys.Date()))
+    gates$DEBUT_1<-str_remove(gates$DEBUT_1,as.character(Sys.Date()+1))
     gates$DEBUT_1<-str_remove(gates$DEBUT_1,"(:00)$")
 
     
     gates$DEBUT_2<-as.character(gates$DEBUT_2)
     gates$DEBUT_2<-str_remove(gates$DEBUT_2,as.character(Sys.Date()))
+    gates$DEBUT_2<-str_remove(gates$DEBUT_2,as.character(Sys.Date()+1))
     gates$DEBUT_2<-str_remove(gates$DEBUT_2,"(:00)$")
     
 
     gates$FIN_1<-as.character(gates$FIN_1)
     gates$FIN_1<-str_remove(gates$FIN_1,as.character(Sys.Date()))
+    gates$FIN_1<-str_remove(gates$FIN_1,as.character(Sys.Date()+1))
     gates$FIN_1<-str_remove(gates$FIN_1,"(:00)$")
 
 
     gates$FIN_2<-as.character(gates$FIN_2)
     gates$FIN_2<-str_remove(gates$FIN_2,as.character(Sys.Date()))
+    gates$FIN_2<-str_remove(gates$FIN_2,as.character(Sys.Date()+1))
     gates$FIN_2<-str_remove(gates$FIN_2,"(:00)$")
     
 
@@ -410,7 +414,7 @@ shinyServer(function(input, output,session){
     gates<-datatable(gates, selection = 'none', editable = T, options = list(dom = 't'), rownames= FALSE) %>% formatStyle(
       'STATUT',
       target = 'row',
-      backgroundColor = styleEqual(c("OUVERT", "FERMÉ"), c('green', 'red'))
+      backgroundColor = styleEqual(c("OUVERT", "FERMÉ"), c('rgb(0,255,0)', 'rgb(255,0,0)'))
     )
     
     output$portes<-renderDT(gates)
@@ -711,6 +715,7 @@ shinyServer(function(input, output,session){
     
     marees$SAINT_MALO<-as.character(marees$SAINT_MALO)
     marees$SAINT_MALO<-str_remove(marees$SAINT_MALO,as.character(Sys.Date()))
+    marees$SAINT_MALO<-str_remove(marees$SAINT_MALO,as.character(Sys.Date()+1))
     
     for (i in 1:length(marees$CHERBOURG)) {
       if(is.na(marees$CHERBOURG[i])){next}
@@ -735,6 +740,7 @@ shinyServer(function(input, output,session){
     
     marees$CHERBOURG<-as.character(marees$CHERBOURG)
     marees$CHERBOURG<-str_remove(marees$CHERBOURG,as.character(Sys.Date()))
+    marees$CHERBOURG<-str_remove(marees$CHERBOURG,as.character(Sys.Date()+1))
     
     for (i in 1:length(marees$LE_HAVRE)) {
       if(is.na(marees$LE_HAVRE[i])){next}
@@ -759,6 +765,7 @@ shinyServer(function(input, output,session){
     
     marees$LE_HAVRE<-as.character(marees$LE_HAVRE)
     marees$LE_HAVRE<-str_remove(marees$LE_HAVRE,as.character(Sys.Date()))
+    marees$LE_HAVRE<-str_remove(marees$LE_HAVRE,as.character(Sys.Date()+1))
     
     marees$LE_HAVRE<-str_remove(marees$LE_HAVRE,"(:00)$")
     marees$CHERBOURG<-str_remove(marees$CHERBOURG,"(:00)$")

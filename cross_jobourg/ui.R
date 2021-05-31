@@ -36,9 +36,9 @@ shinyUI(navbarPage("CROSS Jobourg",
                                                 div(style="display: inline-block;vertical-align:top",h2(textOutput("temp"))),
                                                 div(style="display: inline-block;vertical-align:top;width: 20%;",selectizeInput("vigipirate","Niveau Vigipirate",choices = list("-","Vigilance","Sécurité renforcée - Risque attentat","Urgence attentat"),selected = "Urgence attentat")),
                                                 div(style="display: inline-block;vertical-align:top;width: 15%;",numericInput("isps","Niveau sûreté ISPS",value=1)),
-                                                div(style="display: inline-block;vertical-align:top",DTOutput("portes")),
-                                                div(style="display: inline-block;vertical-align:top",DTOutput("marees")),
-                                                div(style="display: inline-block;vertical-align:top",DTOutput("bms"))
+                                                div(style="display: inline-block;vertical-align:top;font-weight: bold",DTOutput("portes")),
+                                                div(style="display: inline-block;vertical-align:top;font-weight: bold",DTOutput("marees")),
+                                                div(style="display: inline-block;vertical-align:top;font-weight: bold",DTOutput("bms"))
                                                 ))),
                                               
                                             fluidRow(
@@ -49,19 +49,19 @@ shinyUI(navbarPage("CROSS Jobourg",
                                                 div(style="display: inline-block;vertical-align:bottom;width: 45%;",numericInput("taille","Taille cm",175)),
                                                 div(style="display: inline-block;vertical-align:bottom;width: 45%;",numericInput("poids","Poids kg",77)),
                                                 div(style="display: inline-block;vertical-align:bottom;width: 45%;",numericInput("graisse","Masse adipeuse %",25)),
-                                                div(style="display: inline-block;vertical-align:top",DTOutput("survie1"))
+                                                div(style="display: inline-block;vertical-align:top;font-weight: bold",DTOutput("survie1"))
                                                 
                                                 )),
                                               
                                               column(width = 3,wellPanel(
-                                                div(style="display: inline-block;vertical-align:top",DTOutput("meteo")),
-                                                div(style="display: inline-block;vertical-align:top",DTOutput("meteo1"))
+                                                div(style="display: inline-block;vertical-align:top;font-weight: bold",DTOutput("meteo")),
+                                                div(style="display: inline-block;vertical-align:top;font-weight: bold",DTOutput("meteo1"))
                                                 
                                                 
                                               )),
                                               column(width = 4,wellPanel(
-                                                div(style="display: inline-block;vertical-align:top",DTOutput("col1")),
-                                                div(style="display: inline-block;vertical-align:top",DTOutput("moyens"))
+                                                div(style="display: inline-block;vertical-align:top;font-weight: bold",DTOutput("col1")),
+                                                div(style="display: inline-block;vertical-align:top;font-weight: bold",DTOutput("moyens"))
                                                 
                                                 
                                               )),
