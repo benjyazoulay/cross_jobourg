@@ -8,7 +8,7 @@ library(shinybusy)
 
 
 shinyUI(navbarPage("CROSS Jobourg",
-                   tabPanel("",fluidPage(
+                   tabPanel("Tableau de bord",fluidPage(
                      tags$style("
               body {
     -moz-transform: scale(0.55, 0.55); /* Moz-browsers */
@@ -114,6 +114,11 @@ shinyUI(navbarPage("CROSS Jobourg",
                                               ))
                                             )
                                         )
-                            )
+                            ),
+                   tabPanel("Tutoriel",
+                            fluidPage(
+                              h3("Tutoriel"),
+                              fluidRow(HTML('<iframe width="560" height="315" src="https://www.youtube.com/embed/GWyWXLfXk5s" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'))
+                            ))
                    )
         )
