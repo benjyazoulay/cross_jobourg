@@ -7,6 +7,8 @@ library(DT)
 library(lubridate)
 library(httr)
 library(dplyr)
+library(shinybusy)
+
 
 
 
@@ -171,6 +173,8 @@ shinyServer(function(input, output,session){
   
   
   observeEvent(input$update,{
+    
+    show_modal_spinner()
     
     if (!is.null(input$bms_upload)){
       inFile<-input$bms_upload
@@ -444,7 +448,7 @@ shinyServer(function(input, output,session){
     
     output$col1<-renderDT(col1, selection = 'none', server = F, editable = T, extensions = 'Buttons',
                           options = list(dom = 'Bfrtip',
-                                         buttons = list(list(extend = 'csv', filename= 'col1')),
+                                         buttons = list(list(extend = 'csv', filename= 'Divers')),
                                          paging = F,
                                          searching = F, info = FALSE), rownames= FALSE)
     
@@ -560,7 +564,7 @@ shinyServer(function(input, output,session){
                            editable = T,
                            extensions = 'Buttons',
                            options = list(dom = 'Bfrtip',
-                                          buttons = list(list(extend = 'csv', filename= 'meteo')),
+                                          buttons = list(list(extend = 'csv', filename= 'Météo')),
                                           paging = F,
                                           searching = F, info = FALSE
                                           ),
@@ -584,7 +588,7 @@ shinyServer(function(input, output,session){
                          editable = T,
                          extensions = 'Buttons',
                          options = list(dom = 'Bfrtip',
-                                        buttons = list(list(extend = 'csv', filename= 'moyens')),
+                                        buttons = list(list(extend = 'csv', filename= 'Moyens')),
                                         paging = F,
                                         searching = F, info = FALSE
                          ),
@@ -838,7 +842,7 @@ shinyServer(function(input, output,session){
                              ),
                              rownames= FALSE)
     
-    
+    remove_modal_spinner()
     
   })
   

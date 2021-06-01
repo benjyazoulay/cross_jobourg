@@ -4,6 +4,8 @@ library(shinythemes)
 library(stringr)
 library(rvest)
 library(DT)
+library(shinybusy)
+
 
 shinyUI(navbarPage("CROSS Jobourg",
                    tabPanel("",fluidPage(
